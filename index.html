@@ -28,6 +28,18 @@
         .plus:hover { background: #059669; }
         .minus { background: #ef4444; }
         .minus:hover { background: #dc2626; }
+        .streak-badge { background: #f59e0b; color: white; font-size: 12px; padding: 4px 8px; border-radius: 12px; margin-left: auto; }
+        .history-toggle { background: none; color: #3b82f6; border: 1px solid #3b82f6; padding: 8px 16px; font-size: 14px; margin-bottom: 20px; }
+        .history-toggle:hover { background: #3b82f6; color: white; }
+        .heat-map { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 15px; }
+        .heat-day { width: 100%; aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #374151; }
+        .heat-0 { background: #f3f4f6; }
+        .heat-1 { background: #dcfce7; }
+        .heat-2 { background: #bbf7d0; }
+        .heat-3 { background: #86efac; }
+        .heat-4 { background: #4ade80; }
+        .heat-5 { background: #22c55e; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -49,12 +61,24 @@
                 <div style="position: relative; top: -70px;" class="progress-text" id="progress-text">0/5</div>
             </div>
 
+            <button class="history-toggle" onclick="toggleHistory()">📊 View 30-Day History</button>
+
+            <div id="history-section" class="hidden">
+                <h3 style="margin-bottom: 15px; color: #374151;">30-Day Progress</h3>
+                <div class="heat-map" id="heat-map"></div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; margin-bottom: 20px;">
+                    <span>30 days ago</span>
+                    <span>Today</span>
+                </div>
+            </div>
+
             <div class="habit" onclick="toggleHabit('wake')">
                 <div class="checkbox" id="wake-check"></div>
                 <div class="habit-info">
                     <h3>Wake up at 6:00 AM ⏰</h3>
                     <p>6:00 AM</p>
                 </div>
+                <div class="streak-badge hidden" id="wake-streak"></div>
             </div>
 
             <div class="habit" onclick="toggleHabit('meditate')">
@@ -63,6 +87,7 @@
                     <h3>Meditate & Pray 🙏</h3>
                     <p>6:00-6:20 AM • 20 min</p>
                 </div>
+                <div class="streak-badge hidden" id="meditate-streak"></div>
             </div>
 
             <div class="habit" onclick="toggleHabit('roo')">
@@ -71,6 +96,7 @@
                     <h3>Take Roo out 🐕</h3>
                     <p>6:30 AM • 10 min</p>
                 </div>
+                <div class="streak-badge hidden" id="roo-streak"></div>
             </div>
 
             <div class="habit" onclick="toggleHabit('workout')">
@@ -79,6 +105,7 @@
                     <h3>Work out 💪</h3>
                     <p>7:00-8:00 AM • 1 hour</p>
                 </div>
+                <div class="streak-badge hidden" id="workout-streak"></div>
             </div>
 
             <div class="habit" onclick="toggleHabit('ready')">
@@ -87,6 +114,7 @@
                     <h3>Get ready ✨</h3>
                     <p>8:30-9:00 AM • 30 min</p>
                 </div>
+                <div class="streak-badge hidden" id="ready-streak"></div>
             </div>
         </div>
 
@@ -110,10 +138,26 @@
             </div>
 
             <div class="nutrition">
-                <span>🥩 Protein (<span id="protein-count">0</span>/3)</span>
+                <span>🥩 Protein (<span id="protein-count">0</span>/5)</span>
                 <div class="counter">
                     <button class="minus" onclick="updateNutrition('protein', -1)">-</button>
                     <button class="plus" onclick="updateNutrition('protein', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="nutrition">
+                <span>💊 Vitamins (<span id="vitamins-count">0</span>/2)</span>
+                <div class="counter">
+                    <button class="minus" onclick="updateNutrition('vitamins', -1)">-</button>
+                    <button class="plus" onclick="updateNutrition('vitamins', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="nutrition">
+                <span>💧 Water (<span id="water-count">0</span>/8)</span>
+                <div class="counter">
+                    <button class="minus" onclick="updateNutrition('water', -1)">-</button>
+                    <button class="plus" onclick="updateNutrition('water', 1)">+</button>
                 </div>
             </div>
         </div>
@@ -128,7 +172,7 @@
         // Initialize data
         const habits = ['wake', 'meditate', 'roo', 'workout', 'ready'];
         let habitData = JSON.parse(localStorage.getItem('habitData')) || {};
-        let nutritionData = JSON.parse(localStorage.getItem('nutritionData')) || {veg: 0, fruit: 0, protein: 0};
+        let nutritionData = JSON.parse(localStorage.getItem('nutritionData')) || {veg: 0, fruit: 0, protein: 0, vitamins: 0, water: 0};
         
         const today = new Date().toDateString();
         if (!habitData[today]) habitData[today] = {};
@@ -137,6 +181,65 @@
         document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
+
+        // Toggle history view
+        function toggleHistory() {
+            const section = document.getElementById('history-section');
+            const button = document.querySelector('.history-toggle');
+            
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                button.textContent = '📊 Hide History';
+                generateHeatMap();
+            } else {
+                section.classList.add('hidden');
+                button.textContent = '📊 View 30-Day History';
+            }
+        }
+
+        // Generate heat map
+        function generateHeatMap() {
+            const heatMap = document.getElementById('heat-map');
+            heatMap.innerHTML = '';
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateString = date.toDateString();
+                
+                const dayData = habitData[dateString] || {};
+                const completed = Object.values(dayData).filter(Boolean).length;
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = `heat-day heat-${completed}`;
+                dayElement.textContent = date.getDate();
+                dayElement.title = `${date.toLocaleDateString()}: ${completed}/5 habits completed`;
+                
+                heatMap.appendChild(dayElement);
+            }
+        }
+
+        // Get habit streak
+        function getStreak(habitId) {
+            let streak = 0;
+            let currentDate = new Date();
+            
+            // Don't count today if habit isn't completed yet
+            if (!habitData[today][habitId]) {
+                currentDate.setDate(currentDate.getDate() - 1);
+            }
+            
+            while (streak < 30) {
+                const dateString = currentDate.toDateString();
+                if (habitData[dateString] && habitData[dateString][habitId]) {
+                    streak++;
+                    currentDate.setDate(currentDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
 
         // Toggle habit
         function toggleHabit(habitId) {
@@ -159,6 +262,7 @@
                 const isCompleted = habitData[today][habit];
                 const element = document.querySelector(`[onclick="toggleHabit('${habit}')"]`);
                 const checkbox = document.getElementById(habit + '-check');
+                const streakBadge = document.getElementById(habit + '-streak');
                 
                 if (isCompleted) {
                     completed++;
@@ -169,6 +273,15 @@
                     element.classList.remove('completed');
                     checkbox.classList.remove('checked');
                     checkbox.textContent = '';
+                }
+                
+                // Update streak
+                const streak = getStreak(habit);
+                if (streak > 0) {
+                    streakBadge.textContent = `${streak} day${streak !== 1 ? 's' : ''}`;
+                    streakBadge.classList.remove('hidden');
+                } else {
+                    streakBadge.classList.add('hidden');
                 }
             });
             
