@@ -3,507 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Wellness Tracker</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>My Wellness Tracker</title>
     <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; }
+        .container { max-width: 400px; margin: 0 auto; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .habit { display: flex; align-items: center; padding: 15px; background: #f9fafb; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+        .habit:hover { background: #f3f4f6; }
+        .habit.completed { background: #ecfdf5; border-left: 4px solid #10b981; }
+        .checkbox { width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; }
+        .checkbox.checked { background: #10b981; border-color: #10b981; color: white; }
+        .habit-info h3 { color: #374151; font-size: 16px; margin-bottom: 4px; }
+        .habit-info p { color: #6b7280; font-size: 14px; }
+        .progress-ring { width: 100px; height: 100px; margin: 0 auto 20px; }
+        .progress-text { text-align: center; font-size: 18px; font-weight: bold; color: #374151; }
+        button { background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: background 0.2s; }
+        button:hover { background: #2563eb; }
+        .nutrition { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .counter { display: flex; align-items: center; gap: 10px; }
+        .counter button { width: 30px; height: 30px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .plus { background: #10b981; }
+        .plus:hover { background: #059669; }
+        .minus { background: #ef4444; }
+        .minus:hover { background: #dc2626; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <div class="header">
+            <h1>My Wellness Tracker</h1>
+            <p id="date"></p>
+        </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { CheckCircle2, Circle, Plus, ShoppingCart, Target, Calendar, Clock, Utensils, Apple, Dumbbell } = lucideReact;
-
-        const WellnessTracker = () => {
-            // Get today's date string
-            const getTodayString = () => new Date().toISOString().split('T')[0];
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: #374151;">Morning Routine</h2>
             
-            // Load data from localStorage
-            const loadData = () => {
-                const saved = localStorage.getItem('wellnessData');
-                if (saved) {
-                    return JSON.parse(saved);
-                }
-                return {
-                    habits: {},
-                    meals: {},
-                    groceryList: []
-                };
-            };
+            <div class="progress-ring">
+                <svg width="100" height="100" style="transform: rotate(-90deg);">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                    <circle id="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="8" 
+                            stroke-dasharray="283" stroke-dashoffset="283" style="transition: stroke-dashoffset 0.5s;"/>
+                </svg>
+                <div style="position: relative; top: -70px;" class="progress-text" id="progress-text">0/5</div>
+            </div>
 
-            const [data, setData] = useState(loadData);
-            const [activeTab, setActiveTab] = useState('dashboard');
-            const [showStats, setShowStats] = useState(false);
-            const [newMeal, setNewMeal] = useState('');
+            <div class="habit" onclick="toggleHabit('wake')">
+                <div class="checkbox" id="wake-check"></div>
+                <div class="habit-info">
+                    <h3>Wake up at 6:00 AM ⏰</h3>
+                    <p>6:00 AM</p>
+                </div>
+            </div>
+
+            <div class="habit" onclick="toggleHabit('meditate')">
+                <div class="checkbox" id="meditate-check"></div>
+                <div class="habit-info">
+                    <h3>Meditate & Pray 🙏</h3>
+                    <p>6:00-6:20 AM • 20 min</p>
+                </div>
+            </div>
+
+            <div class="habit" onclick="toggleHabit('roo')">
+                <div class="checkbox" id="roo-check"></div>
+                <div class="habit-info">
+                    <h3>Take Roo out 🐕</h3>
+                    <p>6:30 AM • 10 min</p>
+                </div>
+            </div>
+
+            <div class="habit" onclick="toggleHabit('workout')">
+                <div class="checkbox" id="workout-check"></div>
+                <div class="habit-info">
+                    <h3>Work out 💪</h3>
+                    <p>7:00-8:00 AM • 1 hour</p>
+                </div>
+            </div>
+
+            <div class="habit" onclick="toggleHabit('ready')">
+                <div class="checkbox" id="ready-check"></div>
+                <div class="habit-info">
+                    <h3>Get ready ✨</h3>
+                    <p>8:30-9:00 AM • 30 min</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: #374151;">Nutrition Goals</h2>
             
-            // Morning habits configuration - Your exact schedule
-            const morningHabits = [
-                { id: 'wake', name: 'Wake up at 6:00 AM', icon: Clock, target: '6:00 AM', time: '6:00' },
-                { id: 'meditate_pray', name: 'Meditate & Pray', icon: Target, target: '20 min', time: '6:00-6:20' },
-                { id: 'roo', name: 'Take Roo out', icon: 'dog', target: '10 min', time: '6:30' },
-                { id: 'workout', name: 'Work out', icon: Dumbbell, target: '1 hour', time: '7:00-8:00' },
-                { id: 'ready', name: 'Get ready', icon: 'sparkles', target: '30 min', time: '8:30-9:00' }
-            ];
+            <div class="nutrition">
+                <span>🥬 Vegetables (<span id="veg-count">0</span>/5)</span>
+                <div class="counter">
+                    <button class="minus" onclick="updateNutrition('veg', -1)">-</button>
+                    <button class="plus" onclick="updateNutrition('veg', 1)">+</button>
+                </div>
+            </div>
 
-            // Nutrition goals
-            const nutritionGoals = [
-                { id: 'vegetables', name: 'Vegetables', target: 5, unit: 'servings', icon: Apple },
-                { id: 'fruits', name: 'Fruits', target: 3, unit: 'servings', icon: Apple },
-                { id: 'protein', name: 'Protein', target: 3, unit: 'servings', icon: Utensils }
-            ];
+            <div class="nutrition">
+                <span>🍎 Fruits (<span id="fruit-count">0</span>/3)</span>
+                <div class="counter">
+                    <button class="minus" onclick="updateNutrition('fruit', -1)">-</button>
+                    <button class="plus" onclick="updateNutrition('fruit', 1)">+</button>
+                </div>
+            </div>
 
-            const today = getTodayString();
+            <div class="nutrition">
+                <span>🥩 Protein (<span id="protein-count">0</span>/3)</span>
+                <div class="counter">
+                    <button class="minus" onclick="updateNutrition('protein', -1)">-</button>
+                    <button class="plus" onclick="updateNutrition('protein', 1)">+</button>
+                </div>
+            </div>
+        </div>
 
-            // Save data to localStorage whenever it changes
-            useEffect(() => {
-                localStorage.setItem('wellnessData', JSON.stringify(data));
-            }, [data]);
+        <div class="card">
+            <button onclick="generateGroceryList()" style="width: 100%;">🛒 Generate Grocery List</button>
+            <div id="grocery-list" style="margin-top: 20px; display: none;"></div>
+        </div>
+    </div>
 
-            // Initialize today's data if it doesn't exist
-            if (!data.habits[today]) {
-                data.habits[today] = {};
-                data.meals[today] = { vegetables: 0, fruits: 0, protein: 0, meals: [] };
-            }
+    <script>
+        // Initialize data
+        const habits = ['wake', 'meditate', 'roo', 'workout', 'ready'];
+        let habitData = JSON.parse(localStorage.getItem('habitData')) || {};
+        let nutritionData = JSON.parse(localStorage.getItem('nutritionData')) || {veg: 0, fruit: 0, protein: 0};
+        
+        const today = new Date().toDateString();
+        if (!habitData[today]) habitData[today] = {};
 
-            // Get historical data for the past 30 days
-            const getHistoricalData = () => {
-                const days = [];
-                const today = new Date();
+        // Set date
+        document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        // Toggle habit
+        function toggleHabit(habitId) {
+            habitData[today][habitId] = !habitData[today][habitId];
+            localStorage.setItem('habitData', JSON.stringify(habitData));
+            updateDisplay();
+        }
+
+        // Update nutrition
+        function updateNutrition(type, change) {
+            nutritionData[type] = Math.max(0, nutritionData[type] + change);
+            localStorage.setItem('nutritionData', JSON.stringify(nutritionData));
+            document.getElementById(type + '-count').textContent = nutritionData[type];
+        }
+
+        // Update display
+        function updateDisplay() {
+            let completed = 0;
+            habits.forEach(habit => {
+                const isCompleted = habitData[today][habit];
+                const element = document.querySelector(`[onclick="toggleHabit('${habit}')"]`);
+                const checkbox = document.getElementById(habit + '-check');
                 
-                for (let i = 29; i >= 0; i--) {
-                    const date = new Date(today);
-                    date.setDate(today.getDate() - i);
-                    const dateString = date.toISOString().split('T')[0];
-                    
-                    const dayData = {
-                        date: dateString,
-                        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-                        dayNumber: date.getDate(),
-                        habits: data.habits[dateString] || {},
-                        completedCount: Object.values(data.habits[dateString] || {}).filter(Boolean).length
-                    };
-                    days.push(dayData);
-                }
-                return days;
-            };
-
-            // Toggle habit completion
-            const toggleHabit = (habitId) => {
-                setData(prev => ({
-                    ...prev,
-                    habits: {
-                        ...prev.habits,
-                        [today]: {
-                            ...prev.habits[today],
-                            [habitId]: !prev.habits[today][habitId]
-                        }
-                    }
-                }));
-            };
-
-            // Update nutrition count
-            const updateNutrition = (type, change) => {
-                setData(prev => ({
-                    ...prev,
-                    meals: {
-                        ...prev.meals,
-                        [today]: {
-                            ...prev.meals[today],
-                            [type]: Math.max(0, prev.meals[today][type] + change)
-                        }
-                    }
-                }));
-            };
-
-            // Add meal
-            const addMeal = () => {
-                if (!newMeal.trim()) return;
-                
-                setData(prev => ({
-                    ...prev,
-                    meals: {
-                        ...prev.meals,
-                        [today]: {
-                            ...prev.meals[today],
-                            meals: [...prev.meals[today].meals, newMeal.trim()]
-                        }
-                    }
-                }));
-                setNewMeal('');
-            };
-
-            // Generate grocery list from common healthy items
-            const generateGroceryList = () => {
-                const healthyItems = [
-                    // Vegetables
-                    'Spinach', 'Broccoli', 'Bell peppers', 'Carrots', 'Sweet potatoes',
-                    'Kale', 'Zucchini', 'Tomatoes', 'Cucumbers', 'Onions',
-                    // Fruits
-                    'Apples', 'Bananas', 'Berries', 'Oranges', 'Avocados',
-                    // Proteins
-                    'Chicken breast', 'Salmon', 'Eggs', 'Greek yogurt', 'Beans',
-                    'Quinoa', 'Nuts', 'Tofu'
-                ];
-                
-                setData(prev => ({
-                    ...prev,
-                    groceryList: healthyItems
-                }));
-                setActiveTab('grocery');
-            };
-
-            // Get habit streak (simplified - just count recent days)
-            const getHabitStreak = (habitId) => {
-                let streak = 0;
-                let currentDate = new Date();
-                
-                while (streak < 30) { // Check up to 30 days back
-                    const dateString = currentDate.toISOString().split('T')[0];
-                    if (data.habits[dateString] && data.habits[dateString][habitId]) {
-                        streak++;
-                        currentDate.setDate(currentDate.getDate() - 1);
-                    } else {
-                        break;
-                    }
-                }
-                return streak;
-            };
-
-            // Render icon helper function
-            const renderIcon = (habit) => {
-                if (habit.icon === 'dog') {
-                    return React.createElement('span', { className: 'text-lg' }, '🐕');
-                } else if (habit.icon === 'sparkles') {
-                    return React.createElement('span', { className: 'text-lg' }, '✨');
+                if (isCompleted) {
+                    completed++;
+                    element.classList.add('completed');
+                    checkbox.classList.add('checked');
+                    checkbox.textContent = '✓';
                 } else {
-                    return React.createElement(habit.icon, { className: 'w-4 h-4 text-gray-400' });
+                    element.classList.remove('completed');
+                    checkbox.classList.remove('checked');
+                    checkbox.textContent = '';
                 }
-            };
+            });
+            
+            // Update progress ring
+            const percentage = (completed / habits.length) * 100;
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (percentage / 100) * circumference;
+            document.getElementById('progress-circle').style.strokeDashoffset = offset;
+            document.getElementById('progress-text').textContent = `${completed}/${habits.length}`;
+        }
 
-            // Dashboard Tab
-            const DashboardTab = () => {
-                const completedHabits = Object.values(data.habits[today]).filter(Boolean).length;
-                const totalHabits = morningHabits.length;
-                const completionPercentage = (completedHabits / totalHabits) * 100;
-                
-                return React.createElement('div', { className: 'space-y-6' },
-                    // Header with Progress
-                    React.createElement('div', { className: 'text-center py-4' },
-                        React.createElement('h1', { className: 'text-2xl font-bold text-gray-800' }, "Today's Routine"),
-                        React.createElement('p', { className: 'text-gray-600' }, 
-                            new Date().toLocaleDateString('en-US', { 
-                                weekday: 'long', 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                            })
-                        ),
-                        
-                        // Daily Progress Ring
-                        React.createElement('div', { className: 'mt-4 flex flex-col items-center' },
-                            React.createElement('div', { className: 'relative w-20 h-20' },
-                                React.createElement('svg', { className: 'w-20 h-20 transform -rotate-90' },
-                                    React.createElement('circle', {
-                                        cx: '40',
-                                        cy: '40',
-                                        r: '36',
-                                        stroke: '#e5e7eb',
-                                        strokeWidth: '8',
-                                        fill: 'transparent'
-                                    }),
-                                    React.createElement('circle', {
-                                        cx: '40',
-                                        cy: '40',
-                                        r: '36',
-                                        stroke: '#10b981',
-                                        strokeWidth: '8',
-                                        fill: 'transparent',
-                                        strokeDasharray: `${2 * Math.PI * 36}`,
-                                        strokeDashoffset: `${2 * Math.PI * 36 * (1 - completionPercentage / 100)}`,
-                                        className: 'transition-all duration-500'
-                                    })
-                                ),
-                                React.createElement('div', { className: 'absolute inset-0 flex items-center justify-center' },
-                                    React.createElement('span', { className: 'text-lg font-bold text-gray-700' },
-                                        `${completedHabits}/${totalHabits}`
-                                    )
-                                )
-                            ),
-                            React.createElement('p', { className: 'text-sm text-gray-600 mt-2' },
-                                `${Math.round(completionPercentage)}% Complete`
-                            ),
-                            
-                            // View Stats Button
-                            React.createElement('button', {
-                                onClick: () => setShowStats(!showStats),
-                                className: 'mt-3 text-blue-500 text-sm font-medium hover:text-blue-600'
-                            }, `${showStats ? 'Hide' : 'View'} 30-Day History`)
-                        )
-                    ),
+        // Generate grocery list
+        function generateGroceryList() {
+            const items = [
+                'Spinach', 'Broccoli', 'Bell peppers', 'Carrots', 'Sweet potatoes',
+                'Apples', 'Bananas', 'Berries', 'Oranges', 'Avocados',
+                'Chicken breast', 'Salmon', 'Eggs', 'Greek yogurt', 'Quinoa'
+            ];
+            
+            const listElement = document.getElementById('grocery-list');
+            listElement.innerHTML = '<h3>Healthy Shopping List:</h3>' + 
+                items.map(item => `<label style="display: block; margin: 8px 0;"><input type="checkbox"> ${item}</label>`).join('');
+            listElement.style.display = 'block';
+        }
 
-                    // 30-Day Heat Map
-                    showStats && React.createElement('div', { className: 'bg-white rounded-xl p-6 shadow-sm' },
-                        React.createElement('h3', { className: 'text-lg font-semibold mb-4 text-gray-800' }, '30-Day Progress'),
-                        React.createElement('div', { className: 'grid grid-cols-10 gap-1' },
-                            getHistoricalData().map((day, index) => {
-                                const intensity = day.completedCount / morningHabits.length;
-                                const bgColor = intensity === 0 ? 'bg-gray-100' : 
-                                               intensity < 0.33 ? 'bg-green-200' :
-                                               intensity < 0.66 ? 'bg-green-300' :
-                                               intensity < 1 ? 'bg-green-400' : 'bg-green-500';
-                                
-                                return React.createElement('div', {
-                                    key: index,
-                                    className: `w-6 h-6 rounded ${bgColor} flex items-center justify-center text-xs font-medium text-gray-700`,
-                                    title: `${day.dayName} ${day.dayNumber}: ${day.completedCount}/${morningHabits.length} completed`
-                                }, day.dayNumber);
-                            })
-                        ),
-                        React.createElement('div', { className: 'flex justify-between text-xs text-gray-500 mt-2' },
-                            React.createElement('span', null, '30 days ago'),
-                            React.createElement('span', null, 'Today')
-                        )
-                    ),
-
-                    // Morning Schedule
-                    React.createElement('div', { className: 'bg-white rounded-xl p-6 shadow-sm' },
-                        React.createElement('h2', { className: 'text-lg font-semibold mb-4 text-gray-800' }, 'Morning Schedule'),
-                        React.createElement('div', { className: 'space-y-3' },
-                            morningHabits.map(habit => {
-                                const isCompleted = data.habits[today][habit.id];
-                                const streak = getHabitStreak(habit.id);
-                                
-                                return React.createElement('div', {
-                                    key: habit.id,
-                                    onClick: () => toggleHabit(habit.id),
-                                    className: 'flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors'
-                                },
-                                    React.createElement('div', { className: 'flex items-center space-x-4' },
-                                        isCompleted ? 
-                                            React.createElement(CheckCircle2, { className: 'w-6 h-6 text-green-500' }) :
-                                            React.createElement(Circle, { className: 'w-6 h-6 text-gray-400' }),
-                                        React.createElement('div', { className: 'flex-1' },
-                                            React.createElement('div', { className: 'flex items-center space-x-2 mb-1' },
-                                                React.createElement('p', { 
-                                                    className: `font-medium ${isCompleted ? 'text-green-700' : 'text-gray-700'}`
-                                                }, habit.name),
-                                                renderIcon(habit)
-                                            ),
-                                            React.createElement('div', { className: 'flex items-center space-x-3' },
-                                                React.createElement('span', { className: 'text-sm text-blue-600 font-medium' }, habit.time),
-                                                React.createElement('span', { className: 'text-sm text-gray-500' }, habit.target)
-                                            )
-                                        )
-                                    ),
-                                    streak > 0 && React.createElement('span', { 
-                                        className: 'text-sm font-medium text-orange-600 bg-orange-100 px-3 py-1 rounded-full'
-                                    }, `${streak} day${streak !== 1 ? 's' : ''}`)
-                                );
-                            })
-                        )
-                    ),
-
-                    // Nutrition Goals
-                    React.createElement('div', { className: 'bg-white rounded-xl p-6 shadow-sm' },
-                        React.createElement('h2', { className: 'text-lg font-semibold mb-4 text-gray-800' }, 'Nutrition Goals'),
-                        React.createElement('div', { className: 'space-y-4' },
-                            nutritionGoals.map(goal => {
-                                const current = data.meals[today][goal.id];
-                                const percentage = (current / goal.target) * 100;
-                                
-                                return React.createElement('div', { key: goal.id, className: 'space-y-2' },
-                                    React.createElement('div', { className: 'flex items-center justify-between' },
-                                        React.createElement('div', { className: 'flex items-center space-x-2' },
-                                            React.createElement(goal.icon, { className: 'w-5 h-5 text-green-500' }),
-                                            React.createElement('span', { className: 'font-medium text-gray-700' }, goal.name)
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center space-x-3' },
-                                            React.createElement('span', { className: 'text-sm text-gray-600' },
-                                                `${current}/${goal.target} ${goal.unit}`
-                                            ),
-                                            React.createElement('div', { className: 'flex space-x-1' },
-                                                React.createElement('button', {
-                                                    onClick: () => updateNutrition(goal.id, -1),
-                                                    className: 'w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-lg font-bold hover:bg-red-200'
-                                                }, '-'),
-                                                React.createElement('button', {
-                                                    onClick: () => updateNutrition(goal.id, 1),
-                                                    className: 'w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-lg font-bold hover:bg-green-200'
-                                                }, '+')
-                                            )
-                                        )
-                                    ),
-                                    React.createElement('div', { className: 'w-full bg-gray-200 rounded-full h-2' },
-                                        React.createElement('div', {
-                                            className: 'bg-green-500 h-2 rounded-full transition-all duration-300',
-                                            style: { width: `${Math.min(percentage, 100)}%` }
-                                        })
-                                    )
-                                );
-                            })
-                        )
-                    ),
-
-                    // Quick Actions
-                    React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
-                        React.createElement('button', {
-                            onClick: () => setActiveTab('meals'),
-                            className: 'bg-blue-500 text-white p-4 rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2'
-                        },
-                            React.createElement(Utensils, { className: 'w-5 h-5' }),
-                            React.createElement('span', null, 'Plan Meals')
-                        ),
-                        React.createElement('button', {
-                            onClick: generateGroceryList,
-                            className: 'bg-green-500 text-white p-4 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center justify-center space-x-2'
-                        },
-                            React.createElement(ShoppingCart, { className: 'w-5 h-5' }),
-                            React.createElement('span', null, 'Grocery List')
-                        )
-                    )
-                );
-            };
-
-            // Meals Tab
-            const MealsTab = () => (
-                React.createElement('div', { className: 'space-y-6' },
-                    React.createElement('div', { className: 'text-center py-4' },
-                        React.createElement('h1', { className: 'text-2xl font-bold text-gray-800' }, 'Meal Planning')
-                    ),
-
-                    // Add Meal
-                    React.createElement('div', { className: 'bg-white rounded-xl p-6 shadow-sm' },
-                        React.createElement('h2', { className: 'text-lg font-semibold mb-4 text-gray-800' }, "Log Today's Meals"),
-                        React.createElement('div', { className: 'flex space-x-2' },
-                            React.createElement('input', {
-                                type: 'text',
-                                value: newMeal,
-                                onChange: (e) => setNewMeal(e.target.value),
-                                placeholder: 'e.g., Veggie stir-fry with chicken',
-                                className: 'flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500',
-                                onKeyPress: (e) => e.key === 'Enter' && addMeal()
-                            }),
-                            React.createElement('button', {
-                                onClick: addMeal,
-                                className: 'bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-colors'
-                            }, React.createElement(Plus, { className: 'w-5 h-5' }))
-                        )
-                    ),
-
-                    // Today's Meals
-                    React.createElement('div', { className: 'bg-white rounded-xl p-6 shadow-sm' },
-                        React.createElement('h2', { className: 'text-lg font-semibold mb-4 text-gray-800' }, "Today's Meals"),
-                        data.meals[today].meals.length === 0 ? 
-                            React.createElement('p', { className: 'text-gray-500 italic' }, 'No meals logged yet') :
-                            React.createElement('div', { className: 'space-y-2' },
-                                data.meals[today].meals.map((meal, index) =>
-                                    React.createElement('div', { key: index, className: 'p-3 bg-gray-50 rounded-lg' },
-                                        React.createElement('p', { className: 'text-gray-700' }, meal)
-                                    )
-                                )
-                            )
-                    ),
-
-                    // Meal Suggestions
-                    React.createElement('div', { className: 'bg-white rounded-xl p-6 shadow-sm' },
-                        React.createElement('h2', { className: 'text-lg font-semibold mb-4 text-gray-800' }, 'Healthy Meal Ideas'),
-                        React.createElement('div', { className: 'grid gap-3' },
-                            [
-                                'Grilled salmon with roasted vegetables',
-                                'Quinoa bowl with black beans and avocado',
-                                'Chicken stir-fry with broccoli and bell peppers',
-                                'Greek yogurt with berries and nuts',
-                                'Sweet potato and spinach curry',
-                                'Egg omelet with vegetables and cheese'
-                            ].map((suggestion, index) =>
-                                React.createElement('div', {
-                                    key: index,
-                                    onClick: () => setNewMeal(suggestion),
-                                    className: 'p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors'
-                                }, React.createElement('p', { className: 'text-gray-700' }, suggestion))
-                            )
-                        )
-                    )
-                )
-            );
-
-            // Grocery Tab
-            const GroceryTab = () => (
-                React.createElement('div', { className: 'space-y-6' },
-                    React.createElement('div', { className: 'text-center py-4' },
-                        React.createElement('h1', { className: 'text-2xl font-bold text-gray-800' }, 'Grocery List')
-                    ),
-
-                    React.createElement('div', { className: 'bg-white rounded-xl p-6 shadow-sm' },
-                        React.createElement('div', { className: 'flex items-center justify-between mb-4' },
-                            React.createElement('h2', { className: 'text-lg font-semibold text-gray-800' }, 'Healthy Shopping List'),
-                            React.createElement('button', {
-                                onClick: generateGroceryList,
-                                className: 'text-blue-500 font-medium hover:text-blue-600'
-                            }, 'Refresh')
-                        ),
-                        
-                        React.createElement('div', { className: 'grid gap-2' },
-                            data.groceryList.map((item, index) =>
-                                React.createElement('label', { 
-                                    key: index, 
-                                    className: 'flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer'
-                                },
-                                    React.createElement('input', { type: 'checkbox', className: 'w-4 h-4 text-blue-500' }),
-                                    React.createElement('span', { className: 'text-gray-700' }, item)
-                                )
-                            )
-                        )
-                    )
-                )
-            );
-
-            return React.createElement('div', { className: 'min-h-screen bg-gray-100' },
-                // Main Content
-                React.createElement('div', { className: 'max-w-md mx-auto bg-gray-100 min-h-screen' },
-                    React.createElement('div', { className: 'p-4 pb-20' },
-                        activeTab === 'dashboard' && React.createElement(DashboardTab),
-                        activeTab === 'meals' && React.createElement(MealsTab),
-                        activeTab === 'grocery' && React.createElement(GroceryTab)
-                    ),
-
-                    // Bottom Navigation
-                    React.createElement('div', { className: 'fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200' },
-                        React.createElement('div', { className: 'flex justify-around py-2' },
-                            React.createElement('button', {
-                                onClick: () => setActiveTab('dashboard'),
-                                className: `flex flex-col items-center py-2 px-4 ${activeTab === 'dashboard' ? 'text-blue-500' : 'text-gray-500'}`
-                            },
-                                React.createElement(Target, { className: 'w-6 h-6' }),
-                                React.createElement('span', { className: 'text-xs mt-1' }, 'Dashboard')
-                            ),
-                            React.createElement('button', {
-                                onClick: () => setActiveTab('meals'),
-                                className: `flex flex-col items-center py-2 px-4 ${activeTab === 'meals' ? 'text-blue-500' : 'text-gray-500'}`
-                            },
-                                React.createElement(Utensils, { className: 'w-6 h-6' }),
-                                React.createElement('span', { className: 'text-xs mt-1' }, 'Meals')
-                            ),
-                            React.createElement('button', {
-                                onClick: () => setActiveTab('grocery'),
-                                className: `flex flex-col items-center py-2 px-4 ${activeTab === 'grocery' ? 'text-blue-500' : 'text-gray-500'}`
-                            },
-                                React.createElement(ShoppingCart, { className: 'w-6 h-6' }),
-                                React.createElement('span', { className: 'text-xs mt-1' }, 'Grocery')
-                            )
-                        )
-                    )
-                )
-            );
-        };
-
-        ReactDOM.render(React.createElement(WellnessTracker), document.getElementById('root'));
+        // Initialize display
+        updateDisplay();
+        Object.keys(nutritionData).forEach(type => {
+            document.getElementById(type + '-count').textContent = nutritionData[type];
+        });
     </script>
 </body>
 </html>
