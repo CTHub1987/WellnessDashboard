@@ -58,7 +58,7 @@
                     <circle id="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="8" 
                             stroke-dasharray="283" stroke-dashoffset="283" style="transition: stroke-dashoffset 0.5s;"/>
                 </svg>
-                <div style="position: relative; top: -70px;" class="progress-text" id="progress-text">0/5</div>
+                <div style="position: relative; top: -70px;" class="progress-text" id="progress-text">0/8</div>
             </div>
 
             <button class="history-toggle" onclick="toggleHistory()">📊 View 30-Day History</button>
@@ -119,6 +119,37 @@
         </div>
 
         <div class="card">
+            <h2 style="margin-bottom: 20px; color: #374151;">Night Routine</h2>
+            
+            <div class="habit" onclick="toggleHabit('skincare')">
+                <div class="checkbox" id="skincare-check"></div>
+                <div class="habit-info">
+                    <h3>Skincare routine ✨</h3>
+                    <p>Evening self-care</p>
+                </div>
+                <div class="streak-badge hidden" id="skincare-streak"></div>
+            </div>
+
+            <div class="habit" onclick="toggleHabit('reading')">
+                <div class="checkbox" id="reading-check"></div>
+                <div class="habit-info">
+                    <h3>Meditate & Pray 🙏</h3>
+                    <p>Evening reflection & gratitude</p>
+                </div>
+                <div class="streak-badge hidden" id="reading-streak"></div>
+            </div>
+
+            <div class="habit" onclick="toggleHabit('plan_tomorrow')">
+                <div class="checkbox" id="plan_tomorrow-check"></div>
+                <div class="habit-info">
+                    <h3>Plan tomorrow 📝</h3>
+                    <p>Set priorities for next day</p>
+                </div>
+                <div class="streak-badge hidden" id="plan_tomorrow-streak"></div>
+            </div>
+        </div>
+
+        <div class="card">
             <h2 style="margin-bottom: 20px; color: #374151;">Nutrition Goals</h2>
             
             <div class="nutrition">
@@ -163,16 +194,22 @@
         </div>
 
         <div class="card">
-            <button onclick="generateGroceryList()" style="width: 100%;">🛒 Generate Grocery List</button>
-            <div id="grocery-list" style="margin-top: 20px; display: none;"></div>
+            <h2 style="margin-bottom: 20px; color: #374151;">Daily Notes</h2>
+            <textarea 
+                id="daily-notes" 
+                placeholder="How was your day? Any thoughts, wins, or reflections..."
+                style="width: 100%; min-height: 120px; padding: 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-family: inherit; font-size: 14px; resize: vertical; outline: none;"
+                onchange="saveNotes()"
+            ></textarea>
         </div>
     </div>
 
     <script>
         // Initialize data
-        const habits = ['wake', 'meditate', 'roo', 'workout', 'ready'];
+        const habits = ['wake', 'meditate', 'roo', 'workout', 'ready', 'skincare', 'reading', 'plan_tomorrow'];
         let habitData = JSON.parse(localStorage.getItem('habitData')) || {};
         let nutritionData = JSON.parse(localStorage.getItem('nutritionData')) || {veg: 0, fruit: 0, protein: 0, vitamins: 0, water: 0};
+        let notesData = JSON.parse(localStorage.getItem('notesData')) || {};
         
         const today = new Date().toDateString();
         if (!habitData[today]) habitData[today] = {};
@@ -211,9 +248,9 @@
                 const completed = Object.values(dayData).filter(Boolean).length;
                 
                 const dayElement = document.createElement('div');
-                dayElement.className = `heat-day heat-${completed}`;
+                dayElement.className = `heat-day heat-${Math.min(completed, 5)}`;
                 dayElement.textContent = date.getDate();
-                dayElement.title = `${date.toLocaleDateString()}: ${completed}/5 habits completed`;
+                dayElement.title = `${date.toLocaleDateString()}: ${completed}/8 habits completed`;
                 
                 heatMap.appendChild(dayElement);
             }
@@ -293,22 +330,22 @@
             document.getElementById('progress-text').textContent = `${completed}/${habits.length}`;
         }
 
-        // Generate grocery list
-        function generateGroceryList() {
-            const items = [
-                'Spinach', 'Broccoli', 'Bell peppers', 'Carrots', 'Sweet potatoes',
-                'Apples', 'Bananas', 'Berries', 'Oranges', 'Avocados',
-                'Chicken breast', 'Salmon', 'Eggs', 'Greek yogurt', 'Quinoa'
-            ];
-            
-            const listElement = document.getElementById('grocery-list');
-            listElement.innerHTML = '<h3>Healthy Shopping List:</h3>' + 
-                items.map(item => `<label style="display: block; margin: 8px 0;"><input type="checkbox"> ${item}</label>`).join('');
-            listElement.style.display = 'block';
+        // Save notes
+        function saveNotes() {
+            const notes = document.getElementById('daily-notes').value;
+            notesData[today] = notes;
+            localStorage.setItem('notesData', JSON.stringify(notesData));
+        }
+
+        // Load notes for today
+        function loadNotes() {
+            const notes = notesData[today] || '';
+            document.getElementById('daily-notes').value = notes;
         }
 
         // Initialize display
         updateDisplay();
+        loadNotes();
         Object.keys(nutritionData).forEach(type => {
             document.getElementById(type + '-count').textContent = nutritionData[type];
         });
